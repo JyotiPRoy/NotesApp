@@ -52,23 +52,8 @@ fun ComposeScreen(
         color = noteBackgroundAnimatable.value
     )
 
-    LaunchedEffect(key1 = true) {
-        viewModel.eventFlow.collectLatest { event ->
-            when(event) {
-                is ComposeViewModel.UIEvent.ShowSnackBar -> {
-                    scaffoldState.snackbarHostState.showSnackbar(
-                        message = event.message
-                    )
-                }
-                is ComposeViewModel.UIEvent.SaveNote -> {
-                    navController.navigateUp()
-                }
-            }
-        }
-    }
-
-    BackHandler(enabled = true) {
-        navController.popBackStack()
+    fun onBack() {
+        navController.navigateUp()
         scope.launch {
             noteBackgroundAnimatable.animateTo(
                 targetValue = Color.Transparent,
@@ -79,10 +64,28 @@ fun ComposeScreen(
         }
     }
 
+    LaunchedEffect(key1 = true) {
+        viewModel.eventFlow.collectLatest { event ->
+            when(event) {
+                is ComposeViewModel.UIEvent.ShowSnackBar -> {
+                    scaffoldState.snackbarHostState.showSnackbar(
+                        message = event.message
+                    )
+                }
+                is ComposeViewModel.UIEvent.SaveNote -> {
+                    onBack()
+                }
+            }
+        }
+    }
+
+    BackHandler(enabled = true) { onBack() }
+
     Scaffold(
         floatingActionButton = {
             FloatingActionButton(
                 onClick = {
+
                     viewModel.onEvent(ComposeEvent.SaveNote)
                 },
                 backgroundColor = MaterialTheme.colors.primary
